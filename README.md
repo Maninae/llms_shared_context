@@ -1,4 +1,4 @@
-# ~/.llms — Personal LLM Knowledge Hub
+# ~/llms — Personal LLM Knowledge Hub
 
 Your centralized, tool-agnostic repository for skills, workflows, and agent configuration that works across **any** LLM coding assistant.
 
@@ -11,7 +11,7 @@ Your centralized, tool-agnostic repository for skills, workflows, and agent conf
 ## Directory Structure
 
 ```
-~/.llms/
+~/llms/
 ├── skills/              # Reusable skills (SKILL.md format)
 │   ├── systematic-debugging/
 │   ├── playwright-skill/
@@ -37,12 +37,12 @@ Your centralized, tool-agnostic repository for skills, workflows, and agent conf
 ### Initialize a New Repo
 
 ```bash
-~/.llms/scripts/init.sh /path/to/repo
+~/llms/scripts/init.sh /path/to/repo
 ```
 
 This creates:
-- `.agent/skills` → symlink to `~/.llms/skills`
-- `.agent/workflows` → symlink to `~/.llms/workflows`
+- `.agent/skills` → symlink to `~/llms/skills`
+- `.agent/workflows` → symlink to `~/llms/workflows`
 - `.agent/history/`, `techdocs/`, `rules/` → local (project-specific)
 - `GEMINI.md` → local agent instructions (customize per project)
 - `CLAUDE.md` → symlink to GEMINI.md
@@ -51,14 +51,14 @@ This creates:
 ### Update an Existing Repo
 
 ```bash
-~/.llms/scripts/update.sh /path/to/repo
+~/llms/scripts/update.sh /path/to/repo
 ```
 
 Converts existing local skills/workflows to symlinks.
 
 ## Adding Skills
 
-Drop a new folder into `~/.llms/skills/`:
+Drop a new folder into `~/llms/skills/`:
 
 ```
 skills/
@@ -85,7 +85,7 @@ description: What this skill does and when to use it
 
 ## Adding Workflows
 
-Create a new `.md` file in `~/.llms/workflows/`:
+Create a new `.md` file in `~/llms/workflows/`:
 
 ```markdown
 ---
@@ -149,7 +149,7 @@ description: Short description for workflow list
 Initialize as a git repo for backup and multi-machine sync:
 
 ```bash
-cd ~/.llms
+cd ~/llms
 git init
 git add .
 git commit -m "Initial commit: personal LLM knowledge hub"
@@ -161,7 +161,7 @@ git push -u origin main
 
 On a new machine:
 ```bash
-git clone git@github.com:yourusername/llms.git ~/.llms
+git clone git@github.com:yourusername/llms.git ~/llms
 ```
 
 ## Maintenance
@@ -174,7 +174,7 @@ For workflows on Claude Code (which uses copies):
 ```bash
 for repo in ~/Developer/*/; do
   if [ -d "$repo/.claude/commands" ]; then
-    ~/.llms/scripts/update.sh "$repo"
+    ~/llms/scripts/update.sh "$repo"
   fi
 done
 ```

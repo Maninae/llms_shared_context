@@ -29,7 +29,9 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-LLMS_DIR="$HOME/.llms"
+# Source of truth - dynamically determined from script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LLMS_DIR="$(dirname "$SCRIPT_DIR")"  # Go up one level from scripts/
 TARGET_DIR="${1:-.}"
 TARGET_DIR=$(cd "$TARGET_DIR" && pwd)
 
