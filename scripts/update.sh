@@ -4,18 +4,18 @@
 # LLM UPDATE - Convert Existing Repos to Use Symlinks
 # ============================================================================
 #
-# This script updates an existing repo to use symlinks from ~/.llms/
+# This script updates an existing repo to use symlinks from {ROOT}/llms_shared_context/
 # instead of local copies of skills and workflows.
 #
 # What it does:
 #   - Backs up existing .agent/skills and .agent/workflows
-#   - Replaces them with symlinks to ~/.llms/
+#   - Replaces them with symlinks to {ROOT}/llms_shared_context/
 #   - Updates .claude/commands/ with latest workflows
 #   - Creates missing symlinks (CLAUDE.md, .cursorrules)
 #
 # Usage:
-#   ~/.llms/scripts/update.sh              # Update current directory
-#   ~/.llms/scripts/update.sh /path/to/repo  # Update specific directory
+#   {ROOT}/llms_shared_context/scripts/update.sh              # Update current directory
+#   {ROOT}/llms_shared_context/scripts/update.sh /path/to/repo  # Update specific directory
 #
 # ============================================================================
 
@@ -62,7 +62,7 @@ fi
 
 if [ -d "$LLMS_DIR/skills" ]; then
     ln -sfn "$LLMS_DIR/skills" "$TARGET_DIR/.agent/skills"
-    echo -e "${GREEN}✓ .agent/skills -> ~/.llms/skills${NC}"
+    echo -e "${GREEN}✓ .agent/skills -> {ROOT}/llms_shared_context/skills${NC}"
 fi
 
 # ============================================================================
@@ -75,7 +75,7 @@ fi
 
 if [ -d "$LLMS_DIR/workflows" ]; then
     ln -sfn "$LLMS_DIR/workflows" "$TARGET_DIR/.agent/workflows"
-    echo -e "${GREEN}✓ .agent/workflows -> ~/.llms/workflows${NC}"
+    echo -e "${GREEN}✓ .agent/workflows -> {ROOT}/llms_shared_context/workflows${NC}"
 fi
 
 # ============================================================================
@@ -95,7 +95,7 @@ mkdir -p "$TARGET_DIR/.agent/rules"
 # 3. Create shared symlink inside
 if [ -d "$LLMS_DIR/rules" ]; then
     ln -sfn "$LLMS_DIR/rules" "$TARGET_DIR/.agent/rules/shared"
-    echo -e "${GREEN}✓ .agent/rules/shared -> ~/.llms/rules${NC}"
+    echo -e "${GREEN}✓ .agent/rules/shared -> {ROOT}/llms_shared_context/rules${NC}"
 fi
 
 # 4. Ensure local README exists
@@ -159,8 +159,8 @@ fi
 echo ""
 echo -e "${GREEN}✅ Update complete!${NC}"
 echo ""
-echo -e "Skills and workflows now symlinked from ${CYAN}~/.llms/${NC}"
-echo -e "Updates to ~/.llms/ will automatically propagate to this repo."
+echo -e "Skills and workflows now symlinked from ${CYAN}{ROOT}/llms_shared_context/${NC}"
+echo -e "Updates to {ROOT}/llms_shared_context/ will automatically propagate to this repo."
 echo ""
 
 # Show any backups

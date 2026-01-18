@@ -7,19 +7,19 @@
 # This script initializes a repository with agent workflow support that works
 # with ANY LLM coding assistant (Gemini/Antigravity, Claude Code, Cursor, etc.)
 #
-# Skills and workflows are SYMLINKED from ~/.llms/ (your personal source of truth)
+# Skills and workflows are SYMLINKED from {ROOT}/llms_shared_context/ (your personal source of truth)
 # so updates propagate automatically to all repos.
 #
 # Creates:
-#   - .agent/           → Agent structure with symlinks to ~/.llms/
+#   - .agent/           → Agent structure with symlinks to {ROOT}/llms_shared_context/
 #   - .claude/          → Claude Code specific (commands mirror workflows)
 #   - GEMINI.md         → Agent instructions (customizable per-project)
 #   - CLAUDE.md         → Symlink to GEMINI.md
 #   - .cursorrules      → Symlink to GEMINI.md (for Cursor)
 #
 # Usage:
-#   ~/.llms/scripts/init.sh              # Initialize current directory
-#   ~/.llms/scripts/init.sh /path/to/repo  # Initialize specific directory
+#   {ROOT}/llms_shared_context/scripts/init.sh              # Initialize current directory
+#   {ROOT}/llms_shared_context/scripts/init.sh /path/to/repo  # Initialize specific directory
 #
 # ============================================================================
 
@@ -48,7 +48,7 @@ echo -e "Initializing: ${GREEN}$TARGET_DIR${NC}"
 echo -e "Source: ${CYAN}$LLMS_DIR${NC}"
 echo ""
 
-# Verify ~/.llms exists
+# Verify repository directory exists
 if [ ! -d "$LLMS_DIR" ]; then
     echo -e "${RED}❌ Error: $LLMS_DIR does not exist!${NC}"
     echo -e "${YELLOW}   Run the setup script first or create the directory manually.${NC}"
@@ -69,20 +69,20 @@ echo -e "${GREEN}📁 Creating .agent directory structure...${NC}"
 mkdir -p "$TARGET_DIR/.agent"/{history,techdocs,future_features}
 
 # ============================================================================
-# Create symlinks to central ~/.llms/
+# Create symlinks to central {ROOT}/llms_shared_context/
 # ============================================================================
-echo -e "${GREEN}🔗 Symlinking skills and workflows from ~/.llms/...${NC}"
+echo -e "${GREEN}🔗 Symlinking skills and workflows from repository...${NC}"
 
 # Symlink skills (shared across all repos)
 if [ -d "$LLMS_DIR/skills" ]; then
     ln -sfn "$LLMS_DIR/skills" "$TARGET_DIR/.agent/skills"
-    echo -e "   ✓ .agent/skills -> ~/.llms/skills"
+    echo -e "   ✓ .agent/skills -> repository/skills"
 fi
 
 # Symlink workflows (shared across all repos)
 if [ -d "$LLMS_DIR/workflows" ]; then
     ln -sfn "$LLMS_DIR/workflows" "$TARGET_DIR/.agent/workflows"
-    echo -e "   ✓ .agent/workflows -> ~/.llms/workflows"
+    echo -e "   ✓ .agent/workflows -> repository/workflows"
 fi
 
 # Set up rules (shared + local support)
@@ -96,7 +96,7 @@ mkdir -p "$TARGET_DIR/.agent/rules"
 # Symlink global rules to .agent/rules/shared
 if [ -d "$LLMS_DIR/rules" ]; then
     ln -sfn "$LLMS_DIR/rules" "$TARGET_DIR/.agent/rules/shared"
-    echo -e "   ✓ .agent/rules/shared -> ~/.llms/rules"
+    echo -e "   ✓ .agent/rules/shared -> repository/rules"
 fi
 
 # Create local README if missing
@@ -261,8 +261,8 @@ echo ""
 echo -e "Directory structure:"
 echo ""
 echo -e "  ${BLUE}.agent/${NC}"
-echo -e "  ├── ${CYAN}skills${NC} -> ~/.llms/skills     ${YELLOW}(SYMLINK - shared)${NC}"
-echo -e "  ├── ${CYAN}workflows${NC} -> ~/.llms/workflows ${YELLOW}(SYMLINK - shared)${NC}"
+echo -e "  ├── ${CYAN}skills${NC} -> {ROOT}/llms_shared_context/skills     ${YELLOW}(SYMLINK - shared)${NC}"
+echo -e "  ├── ${CYAN}workflows${NC} -> {ROOT}/llms_shared_context/workflows ${YELLOW}(SYMLINK - shared)${NC}"
 echo -e "  ├── history/                 ${YELLOW}(local - project-specific)${NC}"
 echo -e "  ├── techdocs/                ${YELLOW}(local - project-specific)${NC}"
 echo -e "  ├── rules/                   ${YELLOW}(SYMLINK - shared)${NC}"
