@@ -79,17 +79,59 @@ if [ -d "$LLMS_DIR/workflows" ]; then
 fi
 
 # ============================================================================
-# Update .claude/commands/
+# Backup and replace rules - HYBRID Structure (shared/ + local)
+# ============================================================================
+echo -e "${GREEN}🔗 Updating rules structure...${NC}"
+
+# 1. If .agent/rules is a symlink (legacy), we MUST remove it to create a directory
+if [ -L "$TARGET_DIR/.agent/rules" ]; then
+    echo -e "${YELLOW}📦 Converting .agent/rules symlink to directory...${NC}"
+    rm "$TARGET_DIR/.agent/rules"
+fi
+
+# 2. Ensure directory exists
+mkdir -p "$TARGET_DIR/.agent/rules"
+
+# 3. Create shared symlink inside
+if [ -d "$LLMS_DIR/rules" ]; then
+    ln -sfn "$LLMS_DIR/rules" "$TARGET_DIR/.agent/rules/shared"
+    echo -e "${GREEN}✓ .agent/rules/shared -> ~/.llms/rules${NC}"
+fi
+
+# 4. Ensure local README exists
+if [ ! -f "$TARGET_DIR/.agent/rules/README.md" ]; then
+     echo "# Project Rules" > "$TARGET_DIR/.agent/rules/README.md"
+     echo "" >> "$TARGET_DIR/.agent/rules/README.md"
+     echo "This directory contains project-specific rules." >> "$TARGET_DIR/.agent/rules/README.md"
+     echo "Global rules are available in the \`shared/\` subdirectory." >> "$TARGET_DIR/.agent/rules/README.md"
+fi
+
+# ============================================================================
+# Update .claude/commands/ (Sync: delete stale, copies new)
 # ============================================================================
 if [ -d "$TARGET_DIR/.claude/commands" ]; then
-    echo -e "${GREEN}📝 Updating .claude/commands/ with latest workflows...${NC}"
+    echo -e "${GREEN}📝 Syncing .claude/commands/ with workflows...${NC}"
+
+    # 1. Remove stale commands (file exists in target, but NOT in source)
+    # Note: We iterate over target files
+    for cmd in "$TARGET_DIR/.claude/commands"/*.md; do
+        if [ -f "$cmd" ]; then
+            name=$(basename "$cmd")
+            if [ ! -f "$LLMS_DIR/workflows/$name" ]; then
+                echo -e "${YELLOW}   🗑️  Removing stale command: $name${NC}"
+                rm "$cmd"
+            fi
+        fi
+    done
+
+    # 2. Add/Update commands from source
     for workflow in "$LLMS_DIR/workflows"/*.md; do
         if [ -f "$workflow" ]; then
             name=$(basename "$workflow")
             cp "$workflow" "$TARGET_DIR/.claude/commands/$name"
         fi
     done
-    echo -e "${GREEN}✓ Updated Claude commands${NC}"
+    echo -e "${GREEN}✓ Synced Claude commands${NC}"
 fi
 
 # ============================================================================

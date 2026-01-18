@@ -71,7 +71,7 @@ fi
 # Create directory structures
 # ============================================================================
 echo -e "${GREEN}📁 Creating .agent directory structure...${NC}"
-mkdir -p "$TARGET_DIR/.agent"/{history,rules,techdocs,future_features}
+mkdir -p "$TARGET_DIR/.agent"/{history,techdocs,future_features}
 
 # ============================================================================
 # Create symlinks to central ~/.llms/
@@ -90,129 +90,46 @@ if [ -d "$LLMS_DIR/workflows" ]; then
     echo -e "   ✓ .agent/workflows -> ~/.llms/workflows"
 fi
 
+# Set up rules (shared + local support)
+# If .agent/rules is a symlink (legacy), remove it to make way for directory
+if [ -L "$TARGET_DIR/.agent/rules" ]; then
+    rm "$TARGET_DIR/.agent/rules"
+fi
+
+mkdir -p "$TARGET_DIR/.agent/rules"
+
+# Symlink global rules to .agent/rules/shared
+if [ -d "$LLMS_DIR/rules" ]; then
+    ln -sfn "$LLMS_DIR/rules" "$TARGET_DIR/.agent/rules/shared"
+    echo -e "   ✓ .agent/rules/shared -> ~/.llms/rules"
+fi
+
+# Create local README if missing
+if [ ! -f "$TARGET_DIR/.agent/rules/README.md" ]; then
+    echo "# Project Rules" > "$TARGET_DIR/.agent/rules/README.md"
+    echo "" >> "$TARGET_DIR/.agent/rules/README.md"
+    echo "This directory contains project-specific rules." >> "$TARGET_DIR/.agent/rules/README.md"
+    echo "Global rules are available in the \`shared/\` subdirectory." >> "$TARGET_DIR/.agent/rules/README.md"
+fi
+
 # ============================================================================
 # Create GEMINI.md (local, customizable per-project)
 # ============================================================================
 echo -e "${GREEN}📝 Creating GEMINI.md...${NC}"
 
-# Check for template, otherwise use inline default
-if [ -f "$LLMS_DIR/templates/AGENT_INSTRUCTIONS.template.md" ]; then
-    cp "$LLMS_DIR/templates/AGENT_INSTRUCTIONS.template.md" "$TARGET_DIR/GEMINI.md"
+if [ -f "$TARGET_DIR/GEMINI.md" ]; then
+    echo -e "${YELLOW}⚠️  GEMINI.md already exists. Skipping overwrite.${NC}"
 else
-    cat > "$TARGET_DIR/GEMINI.md" << 'GEMINI_EOF'
-# Project Rules
-
-**Last Updated:** <!-- Update this date -->
-
-## Step 0: Collaboration Guidelines
-
-[CUSTOMIZE: Add your working style preferences here. Example:]
-- Act as a highly experienced developer that mentors and guides architectural decisions
-- Be healthily skeptical of my suggestions and double-check my work
-- Explain your reasoning for non-trivial decisions
-
----
-
-## Step 1: Understand the Codebase (REQUIRED)
-
-Before doing anything else, **understand the codebase**.
-
-### Required Reading
-
-| Order | File | Purpose |
-|-------|------|---------|
-| 1 | `.agent/techdocs/README.md` | **Project architecture and orientation** |
-| 2 | `README.md` | Project overview and setup |
-
-### Situational Reading (as needed)
-
-Use `/resume` workflow to search for relevant context, then read these on-demand:
-
-| Topic | Doc |
-|-------|-----|
-| [Topic 1] | `.agent/techdocs/[doc].md` |
-| [Topic 2] | `.agent/rules/[rule].md` |
-
----
-
-## Step 2: Review Recent Session History (REQUIRED)
-
-Use the `/resume` workflow to intelligently find relevant context:
-
-```
-/resume
-```
-
-This will:
-1. Scan ALL session `BRIEF.md` files for keywords related to your task
-2. Help you select 2-5 most relevant sessions to read in full
-3. Always include the most recent session for current state
-
-Each session directory contains:
-- `BRIEF.md` - 1-2 sentence summary + keywords
-- `session.md` - Full details (What We Built, Known Issues, Next Steps, How to Resume)
-
----
-
-## Step 3: Create Session History (REQUIRED)
-
-When beginning a new session, **create a session directory**:
-
-```bash
-mkdir -p .agent/history/$(date +%Y%m%d-%H%M%S)_adhoc
-```
-
-- Use current datetime for folder name
-- Use "adhoc" as description to begin; update to a theme if one emerges
-- Create a `session.md` file to track what we do
-- At the end, use `/wrapup` to create `BRIEF.md` and finalize
-
----
-
-## Step 4: Check for Relevant Skills/Docs (AS NEEDED)
-
-| Need | Check |
-|------|-------|
-| Reusable patterns | `.agent/skills/` |
-| Technical how-tos | `.agent/techdocs/` |
-| Past decisions | `.agent/history/` |
-| Feature roadmap | `.agent/future_features/` |
-| Workflows | `.agent/workflows/` |
-
----
-
-## Step 5: Follow Project Constraints
-
-**Always:**
-- [CUSTOMIZE: Add project-specific setup, e.g., "Activate venv: source venv/bin/activate"]
-- Document takeaways in session history
-- Use `/wrapup` at the end of sessions
-
-**Never:**
-- ❌ Lose insights—write them down
-- [CUSTOMIZE: Add project-specific anti-patterns]
-
----
-
-## Current Status
-
-| Area | Status | Notes |
-|------|--------|-------|
-| [Component 1] | 🚧 In Progress | [Notes] |
-| [Component 2] | ⏳ Not Started | [Notes] |
-
----
-
-## Quick Reference
-
-| What | Where |
-|------|-------|
-| **Start here** | `.agent/techdocs/README.md` |
-| Workflows | `.agent/workflows/` (`/resume`, `/wrapup`, `/commit`, etc.) |
-| Session history | `.agent/history/` |
-| Technical docs | `.agent/techdocs/` |
-| Feature roadmap | `.agent/future_features/` |
-GEMINI_EOF
+    # Check for template, otherwise use inline default
+    TEMPLATE_FILE="$LLMS_DIR/templates/GEMINI.template.md"
+    if [ -f "$TEMPLATE_FILE" ]; then
+        cp "$TEMPLATE_FILE" "$TARGET_DIR/GEMINI.md"
+        echo -e "${GREEN}✓ Created GEMINI.md from template${NC}"
+    else
+        echo -e "${RED}❌ Error: Template not found at $TEMPLATE_FILE${NC}"
+        # Fallback to simple stub if template missing
+        echo "# Project Rules" > "$TARGET_DIR/GEMINI.md"
+    fi
 fi
 
 # ============================================================================
@@ -283,24 +200,7 @@ When you learn something important about the codebase:
 3. If it's a must-read, add it to `GEMINI.md` Required Reading
 TECHDOCS_EOF
 
-cat > "$TARGET_DIR/.agent/rules/README.md" << 'RULES_EOF'
-# Project Rules
 
-This directory contains architectural rules and constraints that must be followed.
-
-## Contents
-
-| Rule | Purpose |
-|------|---------|
-| `README.md` | This file - rules overview |
-
-## How to Add Rules
-
-When you establish an important constraint or pattern:
-1. Create a new `.md` file in this directory
-2. Update the table above
-3. If it's critical, add it to `GEMINI.md` Required Reading
-RULES_EOF
 
 cat > "$TARGET_DIR/.agent/history/README.md" << 'HISTORY_EOF'
 # Session History
@@ -370,7 +270,7 @@ echo -e "  ├── ${CYAN}skills${NC} -> ~/.llms/skills     ${YELLOW}(SYMLINK 
 echo -e "  ├── ${CYAN}workflows${NC} -> ~/.llms/workflows ${YELLOW}(SYMLINK - shared)${NC}"
 echo -e "  ├── history/                 ${YELLOW}(local - project-specific)${NC}"
 echo -e "  ├── techdocs/                ${YELLOW}(local - project-specific)${NC}"
-echo -e "  ├── rules/                   ${YELLOW}(local - project-specific)${NC}"
+echo -e "  ├── rules/                   ${YELLOW}(SYMLINK - shared)${NC}"
 echo -e "  └── future_features/         ${YELLOW}(local - project-specific)${NC}"
 echo ""
 echo -e "  ${BLUE}.claude/${NC}                        ${YELLOW}(Claude Code specific)${NC}"
